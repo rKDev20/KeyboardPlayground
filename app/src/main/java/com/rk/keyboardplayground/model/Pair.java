@@ -8,7 +8,6 @@ import androidx.room.PrimaryKey;
 public class Pair {
     @NonNull
     @PrimaryKey
-    public
-    String name;
+    public String name;
     public int frequency;
 }
