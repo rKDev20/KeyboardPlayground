@@ -6,9 +6,10 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import com.rk.keyboardplayground.util.IterativeWordSuggestion;
 import com.rk.keyboardplayground.customViews.CandidateView;
 import com.rk.keyboardplayground.customViews.KeyboardLayout;
+import com.rk.keyboardplayground.util.IterativeWordSuggestion;
+import com.rk.keyboardplayground.util.SPManager;
 
 
 public class CustomInputMethod extends InputMethodService implements KeyboardLayout.KeyboardListener, CandidateView.CandidateListener {
@@ -30,14 +31,15 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
     @Override
     public void onInitializeInterface() {
         Log.d(TAG, "onInitialiseInterface called");
-
     }
+
 
     @Override
     public View onCreateInputView() {
         Log.d(TAG, "onCreateInputView called");
         keyboardLayout = new KeyboardLayout(getApplicationContext());
         keyboardLayout.setKeyboardListener(this);
+        setCandidatesViewShown(true);
         return keyboardLayout;
     }
 
@@ -46,7 +48,6 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
         Log.d(TAG, "onCreateCandidateView called");
         candidateLayout = new CandidateView(getApplicationContext());
         candidateLayout.setWordSelectedListener(this);
-        setCandidatesViewShown(true);
         return candidateLayout;
     }
 
@@ -82,9 +83,17 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
         candidateLayout.setSuggestion(null);
         iterativeWordSuggestion.reset();
         try {
-            currentWord.deleteCharAt(currentWord.length()-1);
-        }catch (StringIndexOutOfBoundsException e){
-            currentWord=new StringBuilder();
+            currentWord.deleteCharAt(currentWord.length() - 1);
+        } catch (StringIndexOutOfBoundsException e) {
+            currentWord = new StringBuilder();
+        }
+    }
+
+    @Override
+    public void onComputeInsets(InputMethodService.Insets outInsets) {
+        super.onComputeInsets(outInsets);
+        if (!isFullscreenMode()) {
+            outInsets.contentTopInsets = outInsets.visibleTopInsets;
         }
     }
 
@@ -93,7 +102,7 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
         inputConnection.commitText(" ", 1);
         candidateLayout.setSuggestion(null);
         iterativeWordSuggestion.reset();
-        currentWord=new StringBuilder();
+        currentWord = new StringBuilder();
     }
 
     @Override
@@ -104,14 +113,14 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
     @Override
     public void onReturn() {
         inputConnection.commitText("\n", 1);
-        currentWord=new StringBuilder();
+        currentWord = new StringBuilder();
     }
 
     @Override
     public void onSelectSuggestion(String s) {
-        inputConnection.commitText(s.substring(currentWord.length())+" ", 1);
+        inputConnection.commitText(s.substring(currentWord.length()) + " ", 1);
         iterativeWordSuggestion.reset();
         iterativeWordSuggestion.updateFrequency(s);
-        currentWord=new StringBuilder();
+        currentWord = new StringBuilder();
     }
 }
