@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">KeyboardPlayground</string>
+    <string name="custom_input_method">Keyboard Playground</string>
+</resources>
