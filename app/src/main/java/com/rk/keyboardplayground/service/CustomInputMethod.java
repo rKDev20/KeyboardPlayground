@@ -53,6 +53,8 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
+        Log.d(TAG,"onStartInputView");
+        keyboardLayout.setSize(SPManager.getSize(this));
         inputConnection = getCurrentInputConnection();
         keyboardLayout.reset();
     }

@@ -5,15 +5,17 @@ import android.util.AttributeSet;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
-
-import com.rk.keyboardplayground.util.HoldListener;
 import com.rk.keyboardplayground.R;
+import com.rk.keyboardplayground.util.HoldListener;
+import com.rk.keyboardplayground.util.SPManager;
 
-public class KeyboardLayout extends ConstraintLayout {
+public class KeyboardLayout extends LinearLayout {
+    private static final String TAG = "KeyboardLayout";
     private KeyboardListener listener;
     private boolean capsEnabled;
     Button[] characters;
+    Size size;
+
 
     public KeyboardLayout(Context context) {
         super(context);
@@ -32,6 +34,8 @@ public class KeyboardLayout extends ConstraintLayout {
 
     private void init() {
         capsEnabled = false;
+        size= SPManager.getSize(getContext());
+        setOrientation(VERTICAL);
         inflate(getContext(), R.layout.keyboard, this);
         setButtonListener();
     }
@@ -69,6 +73,20 @@ public class KeyboardLayout extends ConstraintLayout {
         fourthRow.findViewById(R.id.key_return).setOnClickListener(v -> handleReturn());
 
         thirdRow.findViewById(R.id.key_backspace).setOnTouchListener(new HoldListener(200, 50));
+    }
+
+    public void setSize(Size size){
+        this.size=size;
+        requestLayout();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int newWidth = MeasureSpec.makeMeasureSpec(widthSize, MeasureSpec.EXACTLY);
+        int newHeight = MeasureSpec.makeMeasureSpec((int) (widthSize * size.multiplier), MeasureSpec.EXACTLY);
+        setMeasuredDimension(newWidth, newHeight);
+        measureChildren(newWidth, newHeight);
     }
 
     private void handleNumpad() {
@@ -124,6 +142,17 @@ public class KeyboardLayout extends ConstraintLayout {
         void onCap();
 
         void onReturn();
+    }
+    public enum Size{
+        SMALL(9/21f),
+        MEDIUM(9/16f),
+        LARGE(2/3f);
+
+        protected final float multiplier;
+
+        Size(float multiplier) {
+            this.multiplier = multiplier;
+        }
     }
 }
 
