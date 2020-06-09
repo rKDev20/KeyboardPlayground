@@ -1,6 +1,8 @@
 package com.rk.keyboardplayground.service;
 
 import android.inputmethodservice.InputMethodService;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -19,10 +21,21 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
     private CandidateView candidateLayout;
     private InputConnection inputConnection;
     private IterativeWordSuggestion iterativeWordSuggestion;
+    private static CustomInputMethod instance;
+
+    public void setSize(KeyboardLayout.Size size) {
+        if (keyboardLayout != null)
+            keyboardLayout.setSize(size);
+    }
+
+    public static CustomInputMethod getInstance() {
+        return instance;
+    }
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate called");
+        instance = this;
         currentWord = new StringBuilder();
         iterativeWordSuggestion = new IterativeWordSuggestion(getApplicationContext());
         super.onCreate();
@@ -53,7 +66,7 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
-        Log.d(TAG,"onStartInputView");
+        Log.d(TAG, "onStartInputView"+SPManager.getSize(this));
         keyboardLayout.setSize(SPManager.getSize(this));
         inputConnection = getCurrentInputConnection();
         keyboardLayout.reset();

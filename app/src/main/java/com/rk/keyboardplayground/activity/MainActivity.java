@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -12,16 +13,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.rk.keyboardplayground.R;
 import com.rk.keyboardplayground.customViews.KeyboardLayout;
+import com.rk.keyboardplayground.service.CustomInputMethod;
 import com.rk.keyboardplayground.util.SPManager;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    EditText test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        test = findViewById(R.id.testHere);
         findViewById(R.id.enable).setOnClickListener(v -> enableMyKeyboard());
         setupSize();
     }
@@ -39,17 +43,26 @@ public class MainActivity extends AppCompatActivity {
                 group.check(R.id.large);
         }
         group.setOnCheckedChangeListener((group1, checkedId) -> {
+            KeyboardLayout.Size size = null;
             switch (checkedId) {
                 case R.id.small:
-                    SPManager.setSize(this, KeyboardLayout.Size.SMALL);
+                    size = KeyboardLayout.Size.SMALL;
                     break;
                 case R.id.large:
-                    SPManager.setSize(this, KeyboardLayout.Size.LARGE);
+                    size = KeyboardLayout.Size.LARGE;
                     break;
                 case R.id.medium:
-                    SPManager.setSize(this, KeyboardLayout.Size.MEDIUM);
+                    size = KeyboardLayout.Size.MEDIUM;
             }
+            SPManager.setSize(getApplicationContext(), size);
+            changeSize(size);
         });
+    }
+
+    private void changeSize(KeyboardLayout.Size size) {
+        CustomInputMethod ime = CustomInputMethod.getInstance();
+        if (ime != null)
+            ime.setSize(size);
     }
 
     void enableMyKeyboard() {
