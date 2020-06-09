@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <service android:name=".service.CustomInputMethod"
+            android:theme="@style/AppTheme"
             android:label="@string/custom_input_method"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>

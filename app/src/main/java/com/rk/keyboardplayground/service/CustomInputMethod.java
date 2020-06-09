@@ -1,20 +1,19 @@
 package com.rk.keyboardplayground.service;
 
 import android.inputmethodservice.InputMethodService;
-import android.os.Binder;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import com.rk.keyboardplayground.customViews.CandidateView;
+import com.rk.keyboardplayground.customViews.EmojiLayout;
 import com.rk.keyboardplayground.customViews.KeyboardLayout;
 import com.rk.keyboardplayground.util.IterativeWordSuggestion;
 import com.rk.keyboardplayground.util.SPManager;
 
 
-public class CustomInputMethod extends InputMethodService implements KeyboardLayout.KeyboardListener, CandidateView.CandidateListener {
+public class CustomInputMethod extends InputMethodService implements KeyboardLayout.KeyboardListener, CandidateView.CandidateListener, EmojiLayout.EmojiListener {
     private final static String TAG = "Playground";
     private StringBuilder currentWord;
     private KeyboardLayout keyboardLayout;
@@ -23,13 +22,13 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
     private IterativeWordSuggestion iterativeWordSuggestion;
     private static CustomInputMethod instance;
 
+    public static CustomInputMethod getInstance() {
+        return instance;
+    }
+
     public void setSize(KeyboardLayout.Size size) {
         if (keyboardLayout != null)
             keyboardLayout.setSize(size);
-    }
-
-    public static CustomInputMethod getInstance() {
-        return instance;
     }
 
     @Override
@@ -52,6 +51,7 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
         Log.d(TAG, "onCreateInputView called");
         keyboardLayout = new KeyboardLayout(getApplicationContext());
         keyboardLayout.setKeyboardListener(this);
+        keyboardLayout.setEmojiListener(this);
         setCandidatesViewShown(true);
         return keyboardLayout;
     }
@@ -66,7 +66,7 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
-        Log.d(TAG, "onStartInputView"+SPManager.getSize(this));
+        keyboardLayout.setQwerty();
         keyboardLayout.setSize(SPManager.getSize(this));
         inputConnection = getCurrentInputConnection();
         keyboardLayout.reset();
@@ -93,6 +93,11 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
     }
 
     @Override
+    public void onEmoji(String emoji) {
+        inputConnection.commitText(emoji, 1);
+    }
+
+    @Override
     public void onBackspace() {
         inputConnection.deleteSurroundingText(1, 0);
         candidateLayout.setSuggestion(null);
@@ -102,6 +107,11 @@ public class CustomInputMethod extends InputMethodService implements KeyboardLay
         } catch (StringIndexOutOfBoundsException e) {
             currentWord = new StringBuilder();
         }
+    }
+
+    @Override
+    public void onQwerty() {
+        keyboardLayout.toggleEmoji();
     }
 
     @Override

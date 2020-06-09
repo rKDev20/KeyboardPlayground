@@ -2,6 +2,8 @@ package com.rk.keyboardplayground.customViews;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -11,11 +13,13 @@ import com.rk.keyboardplayground.util.SPManager;
 
 public class KeyboardLayout extends LinearLayout {
     private static final String TAG = "KeyboardLayout";
-    private KeyboardListener listener;
+    private KeyboardListener keyboardListener;
     private boolean capsEnabled;
+    private boolean isEmojiEnabled;
+    private EmojiLayout emojiLayout;
+    private View keyboardLayout;
     Button[] characters;
     Size size;
-
 
     public KeyboardLayout(Context context) {
         super(context);
@@ -34,32 +38,39 @@ public class KeyboardLayout extends LinearLayout {
 
     private void init() {
         capsEnabled = false;
-        size= SPManager.getSize(getContext());
+        isEmojiEnabled = false;
+        size = SPManager.getSize(getContext());
         setOrientation(VERTICAL);
-        inflate(getContext(), R.layout.keyboard, this);
+        keyboardLayout = LayoutInflater.from(getContext()).inflate(R.layout.keyboard, this, false);
+        addView(keyboardLayout);
         setButtonListener();
+        emojiLayout = new EmojiLayout(LayoutInflater.from(getContext()).inflate(R.layout.emoji_layout, this, false));
     }
 
     public void setKeyboardListener(KeyboardListener listener) {
-        this.listener = listener;
+        this.keyboardListener = listener;
+    }
+
+    public void setEmojiListener(EmojiLayout.EmojiListener listener) {
+        emojiLayout.setListener(listener);
     }
 
     private void setButtonListener() {
         characters = new Button[26];
         int j = 0;
-        LinearLayout firstRow = findViewById(R.id.first_row);
+        LinearLayout firstRow = keyboardLayout.findViewById(R.id.first_row);
         for (int i = 0; i < firstRow.getChildCount(); i++) {
             Button tmp = (Button) firstRow.getChildAt(i);
             tmp.setOnClickListener(v -> handleCharacterListener((Button) v));
             characters[j++] = tmp;
         }
-        LinearLayout secondRow = findViewById(R.id.second_row);
+        LinearLayout secondRow = keyboardLayout.findViewById(R.id.second_row);
         for (int i = 1; i < secondRow.getChildCount() - 1; i++) {
             Button tmp = (Button) secondRow.getChildAt(i);
             tmp.setOnClickListener(v -> handleCharacterListener((Button) v));
             characters[j++] = tmp;
         }
-        LinearLayout thirdRow = findViewById(R.id.third_row);
+        LinearLayout thirdRow = keyboardLayout.findViewById(R.id.third_row);
         for (int i = 1; i < thirdRow.getChildCount() - 1; i++) {
             Button tmp = (Button) thirdRow.getChildAt(i);
             tmp.setOnClickListener(v -> handleCharacterListener((Button) v));
@@ -67,16 +78,27 @@ public class KeyboardLayout extends LinearLayout {
         }
         thirdRow.findViewById(R.id.key_caps).setOnClickListener(v -> handleCaps());
         thirdRow.findViewById(R.id.key_backspace).setOnClickListener(v -> handleBackspace());
-        LinearLayout fourthRow = findViewById(R.id.fourth_row);
+        LinearLayout fourthRow = keyboardLayout.findViewById(R.id.fourth_row);
         fourthRow.findViewById(R.id.key_numpad).setOnClickListener(v -> handleNumpad());
         fourthRow.findViewById(R.id.key_space).setOnClickListener(v -> handleSpace());
         fourthRow.findViewById(R.id.key_return).setOnClickListener(v -> handleReturn());
-
+        fourthRow.findViewById(R.id.key_emoji).setOnClickListener(v -> toggleEmoji());
         thirdRow.findViewById(R.id.key_backspace).setOnTouchListener(new HoldListener(200, 50));
     }
 
-    public void setSize(Size size){
-        this.size=size;
+    public void toggleEmoji() {
+        if (isEmojiEnabled) {
+            addView(keyboardLayout);
+            removeView(emojiLayout.view);
+        } else {
+            addView(emojiLayout.view);
+            removeView(keyboardLayout);
+        }
+        isEmojiEnabled = !isEmojiEnabled;
+    }
+
+    public void setSize(Size size) {
+        this.size = size;
         requestLayout();
     }
 
@@ -94,25 +116,25 @@ public class KeyboardLayout extends LinearLayout {
     }
 
     private void handleSpace() {
-        if (listener != null)
-            listener.onSpace();
+        if (keyboardListener != null)
+            keyboardListener.onSpace();
     }
 
     private void handleReturn() {
-        if (listener != null)
-            listener.onReturn();
+        if (keyboardListener != null)
+            keyboardListener.onReturn();
     }
 
     private void handleBackspace() {
-        if (listener != null)
-            listener.onBackspace();
+        if (keyboardListener != null)
+            keyboardListener.onBackspace();
     }
 
     private void handleCharacterListener(Button view) {
-        if (listener != null) {
+        if (keyboardListener != null) {
             if (capsEnabled)
-                listener.onCharacterKey((char) (view.getText().charAt(0) - 32));
-            else listener.onCharacterKey(view.getText().charAt(0));
+                keyboardListener.onCharacterKey((char) (view.getText().charAt(0) - 32));
+            else keyboardListener.onCharacterKey(view.getText().charAt(0));
         }
     }
 
@@ -120,8 +142,8 @@ public class KeyboardLayout extends LinearLayout {
         capsEnabled = !capsEnabled;
         for (Button b : characters)
             b.setAllCaps(capsEnabled);
-        if (listener != null)
-            listener.onCap();
+        if (keyboardListener != null)
+            keyboardListener.onCap();
     }
 
     public void reset() {
@@ -130,6 +152,11 @@ public class KeyboardLayout extends LinearLayout {
             for (Button b : characters)
                 b.setAllCaps(capsEnabled);
         }
+    }
+
+    public void setQwerty() {
+        if (isEmojiEnabled)
+            toggleEmoji();
     }
 
     public interface KeyboardListener {
@@ -143,10 +170,11 @@ public class KeyboardLayout extends LinearLayout {
 
         void onReturn();
     }
-    public enum Size{
-        SMALL(9/21f),
-        MEDIUM(9/16f),
-        LARGE(2/3f);
+
+    public enum Size {
+        SMALL(9 / 21f),
+        MEDIUM(9 / 16f),
+        LARGE(2 / 3f);
 
         protected final float multiplier;
 

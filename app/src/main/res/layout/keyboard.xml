@@ -308,6 +308,15 @@
             android:textAllCaps="false" />
 
         <Button
+            android:id="@+id/key_emoji"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:text="emo"
+            android:textAllCaps="false" />
+
+        <Button
             android:id="@+id/key_space"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

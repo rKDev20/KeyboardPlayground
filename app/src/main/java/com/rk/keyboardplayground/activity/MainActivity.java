@@ -3,6 +3,7 @@ package com.rk.keyboardplayground.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -19,6 +20,7 @@ import com.rk.keyboardplayground.util.SPManager;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     EditText test;
 
     @Override
