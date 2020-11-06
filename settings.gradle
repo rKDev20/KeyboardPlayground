@@ -1,2 +1,3 @@
+include ':bobblekeyboard'
 include ':app'
-rootProject.name = "KeyboardPlayground"
+rootProject.name = "Keyboard Playground"
